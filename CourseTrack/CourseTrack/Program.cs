@@ -1,4 +1,12 @@
+using DataLayer.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("CourseTrackConnectionDb");
+builder.Services.AddDbContext<CourseTrackDbContext>(options =>
+    options.UseNpgsql(connectionString!));
+builder.Services.AddControllers();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
