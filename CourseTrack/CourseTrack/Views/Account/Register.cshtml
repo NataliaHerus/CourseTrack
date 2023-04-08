@@ -1,0 +1,58 @@
+﻿@model RegisterViewModel
+
+@using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "form-horizontal account-form", role = "form" }))
+{
+    @Html.AntiForgeryToken()
+
+    <header>Реєстрація</header>
+
+    <div class="form-group input">
+        @Html.LabelFor(m => m.Email, new { @class = "control-label" })
+        <div>
+            @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.Email)
+        </div>
+    </div>
+
+    <div class="form-group input">
+        @Html.LabelFor(m => m.FirstName, new { @class = "control-label" })
+        <div>
+            @Html.TextBoxFor(m => m.FirstName, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.FirstName)
+        </div>
+    </div>
+
+    <div class="form-group input">
+        @Html.LabelFor(m => m.LastName, new { @class = "control-label" })
+        <div>
+            @Html.TextBoxFor(m => m.LastName, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.LastName)
+        </div>
+    </div>
+
+    <div class="form-group input">
+        @Html.LabelFor(m => m.Password, new { @class = "control-label" })
+        <div>
+            @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.Password)
+        </div>
+    </div>
+
+    <div class="form-group input">
+        @Html.LabelFor(m => m.ConfirmPassword, new { @class = "control-label" })
+        <div>
+            @Html.TextBoxFor(m => m.ConfirmPassword, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.ConfirmPassword)
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-offset-2">
+            <button type="submit" style="margin-top: 15px;">Зареєструватись</button>
+        </div>
+    </div>
+
+    <div class="info">
+        Вже є акаунт? <div class="link" onclick="@("window.location.href='" + @Url.Action("login", "account") + "'");">Увійти</div>
+    </div>
+}

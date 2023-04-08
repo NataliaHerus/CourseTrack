@@ -1,6 +1,13 @@
+using BusinessLayer.Account;
+using BusinessLayer.Services;
+using CourseTrack.Controllers;
+using DataLayer.Account;
 using DataLayer.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 
 // Use Serilog
-builder.Host.UseSerilog((hostContext, services, configuration) => {
+builder.Host.UseSerilog((hostContext, services, configuration) =>
+{
     configuration
         .WriteTo.File("logs.json")
         .WriteTo.Console();
@@ -17,6 +25,62 @@ builder.Host.UseSerilog((hostContext, services, configuration) => {
 var connectionString = builder.Configuration.GetConnectionString("CourseTrackConnectionDb");
 builder.Services.AddDbContext<CourseTrackDbContext>(options =>
     options.UseNpgsql(connectionString!));
+
+
+#region jwt
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["JWT:SecretKey"])),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = context =>
+        {
+            // handle token validation event
+            return Task.CompletedTask;
+        },
+        OnAuthenticationFailed = context =>
+        {
+            // handle authentication failure event
+            return Task.CompletedTask;
+        }
+    };
+
+    options.Events.OnMessageReceived = context =>
+    {
+
+        if (context.Request.Cookies.ContainsKey("X-Access-Token"))
+        {
+            context.Token = context.Request.Cookies["X-Access-Token"];
+        }
+
+        return Task.CompletedTask;
+    };
+});
+
+
+#endregion
+
+builder.Services.AddScoped<IJwtService, JwtService>();
+
+builder.Services.AddScoped<IAccountFacade, AccountFacade>();
+
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+
 builder.Services.AddControllers();
 
 // Add services to the container.
@@ -36,6 +100,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
