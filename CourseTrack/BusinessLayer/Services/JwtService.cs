@@ -9,7 +9,7 @@ namespace BusinessLayer.Services
     public interface IJwtService
     {
         string GenerateToken(IEnumerable<Claim> claims);
-
+        ClaimsPrincipal GetPrincipalFromToken(string token);
     }
 
     public class JwtService : IJwtService
