@@ -1,0 +1,25 @@
+﻿@using DataLayer.Entities.CourseWorkEntity
+@using CourseTrack.Controllers
+@model IEnumerable<CourseWork>
+
+<h2>Курсові роботи:</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Тема</th>
+            <th>Статус</th>
+            <th>Викладач</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var coursework in Model)
+        {
+            <tr>
+                <td>@coursework.Theme</td>
+                <td>@coursework.Status</td>
+                <td>@coursework.Lecturer.LastName @coursework.Lecturer.FirstName</td>
+            </tr>
+        }
+    </tbody>
+</table>

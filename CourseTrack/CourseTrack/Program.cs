@@ -1,8 +1,13 @@
 using BusinessLayer.Account;
+using BusinessLayer.CourseWorks;
 using BusinessLayer.Services;
+using BusinessLayer.Students;
 using CourseTrack.Controllers;
 using DataLayer.Account;
+using DataLayer.CourseWorks;
 using DataLayer.Data;
+using DataLayer.Lecturers;
+using DataLayer.Students;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -75,11 +80,23 @@ builder.Services.AddAuthentication(options =>
 
 #endregion
 
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddScoped<IJwtService, JwtService>();
 
 builder.Services.AddScoped<IAccountFacade, AccountFacade>();
 
+builder.Services.AddScoped<IStudentFacade, StudentFacade>();
+
+builder.Services.AddScoped<ICourseWorkFacade, CourseWorkFacade>();
+
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+
+builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+
+builder.Services.AddScoped<ILecturerRepository, LecturerRepository>();
+
+builder.Services.AddScoped<ICourseWorkRepository, CourseWorkRepository>();
 
 builder.Services.AddControllers();
 
@@ -102,6 +119,7 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.MapControllerRoute(
     name: "default",

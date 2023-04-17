@@ -1,6 +1,7 @@
 ﻿@using CourseTrack.Extensions;
 @using Microsoft.AspNetCore.Identity
 @using System.Security.Claims;
+@using DataLayer.Enums
 
 <!DOCTYPE html>
 <html lang="en">
@@ -34,6 +35,21 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Вийти</a>
                             </li>
+                            @if (User.IsInRole(Role.Lecturer.ToString()))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Student" asp-action="GetAllStudents">Усі студенти</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Student" asp-action="GetLecturerStudents">Мої студенти</a>
+                                </li>
+                            }
+                            @if (User.IsInRole(Role.Student.ToString()))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="CourseWork" asp-action="GetStudentViewCourseWorks">Мої курсові роботи</a>
+                                </li>
+                            }
                         </ul>
                     }
                     else
