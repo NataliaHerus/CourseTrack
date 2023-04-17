@@ -19,6 +19,7 @@ namespace CourseTrack.Controllers
         public ActionResult GetStudentCoursWorks([FromRoute] int Id)
         {
             IEnumerable<CourseWork> courseWorks = _courseWorkFacade.GetStudentCourseWorks(Id);
+            ViewBag.Id = Id;
             return View(courseWorks);
         }
 
