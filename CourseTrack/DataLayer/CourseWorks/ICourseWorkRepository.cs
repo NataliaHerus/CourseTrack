@@ -11,6 +11,8 @@ namespace DataLayer.CourseWorks
     public interface ICourseWorkRepository
     {
         List<CourseWork> GetAllStudentCourseWorks(int studentId);
+
+        List<CourseWork> GetAllStudentCourseWorksByEmail(string email);
         CourseWork CreateCourseWorks(CourseWork courseWork);
         CourseWork GetCourseWorkById(int id);
         CourseWork UpdateCourseWork(CourseWork courseWork);

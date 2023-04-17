@@ -1,4 +1,5 @@
-﻿using DataLayer.Entities.StudentEntity;
+﻿using DataLayer.Entities.LecturerEntity;
+using DataLayer.Entities.StudentEntity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,5 +18,7 @@ namespace DataLayer.Students
         List<Student> GetAllLecturerStudentsList(int lecturerId);
         Student? GetStudentById(int id);
         Task<int> SaveChangesAcync();
+
+        Student? GetStudentByEmail(string email);
     }
 }

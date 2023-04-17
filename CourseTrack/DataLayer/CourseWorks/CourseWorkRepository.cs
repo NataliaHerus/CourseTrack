@@ -50,5 +50,10 @@ namespace DataLayer.CourseWorks
         {
             return await _dbContext.SaveChangesAsync();
         }
+
+        public List<CourseWork> GetAllStudentCourseWorksByEmail(string email)
+        {
+            return _dbContext.CourseWorks.Where(x => x.Student.Email == email).ToList();
+        }
     }
 }

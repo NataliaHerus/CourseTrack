@@ -2,6 +2,7 @@
 using DataLayer.Data;
 using DataLayer.Entities.CourseWorkEntity;
 using DataLayer.Entities.LecturerEntity;
+using DataLayer.Entities.StudentEntity;
 using DataLayer.Enums;
 using DataLayer.Lecturers;
 using DataLayer.Students;
@@ -17,15 +18,17 @@ namespace BusinessLayer.CourseWorks
     public class CourseWorkFacade : ICourseWorkFacade
     {
         private readonly ICourseWorkRepository _courseWorkRepository;
+        private readonly IStudentRepository _studentRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILecturerRepository _lecturerRepository;
 
         public CourseWorkFacade(ICourseWorkRepository courseWorkRepository, IHttpContextAccessor httpContextAccessor,
-             ILecturerRepository lecturerRepository)
+             ILecturerRepository lecturerRepository, IStudentRepository studentRepository)
         {
             _courseWorkRepository = courseWorkRepository;
             _httpContextAccessor = httpContextAccessor;
             _lecturerRepository = lecturerRepository;
+            _studentRepository = studentRepository;
         }
 
         public async Task<CourseWork> ChangeCourseWork(CourseWork courseWork)
@@ -53,5 +56,10 @@ namespace BusinessLayer.CourseWorks
             return _courseWorkRepository.GetAllStudentCourseWorks(studentId);
         }
 
+        public List<CourseWork> GetStudentCourseWorksByEmail()
+        {
+            Student student = _studentRepository.GetStudentByEmail(_httpContextAccessor.HttpContext.User.Identity.Name);
+            return _courseWorkRepository.GetAllStudentCourseWorksByEmail(student.Email);
+        }
     }
 }

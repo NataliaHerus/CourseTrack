@@ -12,6 +12,7 @@ namespace BusinessLayer.CourseWorks
     {
         Task<CourseWork> ChangeCourseWork(CourseWork courseWork);
         List<CourseWork> GetStudentCourseWorks(int studentId);
+        List<CourseWork> GetStudentCourseWorksByEmail();
         Task<CourseWork> CreateCourseWorks(string theme, int studentId);
     }
 }

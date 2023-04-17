@@ -24,9 +24,9 @@ namespace CourseTrack.Controllers
         }
 
         [HttpGet]
-        public ActionResult GetStudentViewCourseWorks(int Id)
+        public ActionResult GetStudentViewCourseWorks()
         {
-            IEnumerable<CourseWork> courseWorks = _courseWorkFacade.GetStudentCourseWorks(Id);
+            IEnumerable<CourseWork> courseWorks = _courseWorkFacade.GetStudentCourseWorksByEmail();
             return View(courseWorks);
         }
 

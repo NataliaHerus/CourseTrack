@@ -33,6 +33,11 @@ namespace DataLayer.Students
             return _dbContext.Students!.ToList();
         }
 
+        public Student? GetStudentByEmail(string email)
+        {
+            return _dbContext.Students!.FirstOrDefault(x => x.Email == email);
+        }
+
         public Student? GetStudentById(int id)
         {
             return _dbContext.Students!.FirstOrDefault(x => x.Id == id);
