@@ -2,6 +2,7 @@
 @using CourseTrack.Controllers
 @model IEnumerable<Student>
 
+
 <style>
     table {
         border-collapse: collapse;
@@ -28,7 +29,14 @@
 
 @if (TempData["Message"] != null)
 {
+@if (TempData["Message"].ToString().Contains("додано"))
+{
     <div class="alert alert-success">@TempData["Message"].ToString()</div>
+}
+else
+{
+    <div class="alert alert-info">@TempData["Message"].ToString()</div>
+}
 }
 
 <table>
@@ -48,11 +56,20 @@
                 <td>@student.FirstName @student.LastName</td>
                 <td>@student.Email</td>
                 <td>
-                <form method="post" asp-action="AddStudent" asp-route-id="@student.Id">
-                    <button type="submit">Add Student</button>
-                </form>
+                    <form method="post" asp-action="AddStudent" asp-route-id="@student.Id">
+                        <button type="submit">Додати студнта</button>
+                    </form>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.disable-after-click').on('click', function () {
+            $(this).attr('disabled', 'disabled');
+        });
+    });
+</script>

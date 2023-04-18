@@ -5,6 +5,7 @@ using DataLayer.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CourseTrack.Controllers
 {
@@ -29,6 +30,7 @@ namespace CourseTrack.Controllers
         public ActionResult GetAllStudents()
         {
             IEnumerable<Student> students = _studentFacade.GetAllStudentsList();
+            ViewBag.CurrentLecturer = User.FindFirst(ClaimTypes.NameIdentifier).Value;
             return View(students);
         }
 
@@ -44,8 +46,18 @@ namespace CourseTrack.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult AddStudent(int id)
         {
-            Student student = _studentFacade.AddStudentToLecturer(id);
-            TempData["Message"] = "Студента " + student.LastName + " " + student.FirstName + " додано до списку ваших студентів";
+            Student student = _studentFacade.GetStudentById(id);
+
+            if (_studentFacade.GetLecturerStudentsList().Contains(student))
+            {
+                TempData["Message"] = "Студент " + student.LastName + " " + student.FirstName + " вже є в списку ваших студентів";
+            }
+            else
+            {
+                _studentFacade.AddStudentToLecturer(id);
+                TempData["Message"] = "Студента " + student.LastName + " " + student.FirstName + " додано до списку ваших студентів";
+            }
+
             return RedirectToAction("GetAllStudents");
         }
 
