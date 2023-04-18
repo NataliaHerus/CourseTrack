@@ -32,9 +32,6 @@
                             <li class="nav-item name">
                                 @fullName
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Вийти</a>
-                            </li>
                             @if (User.IsInRole(Role.Lecturer.ToString()))
                             {
                                 <li class="nav-item">
@@ -50,6 +47,9 @@
                                     <a class="nav-link text-dark" asp-area="" asp-controller="CourseWork" asp-action="GetStudentViewCourseWorks">Мої курсові роботи</a>
                                 </li>
                             }
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Вийти</a>
+                            </li>
                         </ul>
                     }
                     else

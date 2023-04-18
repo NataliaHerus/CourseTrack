@@ -1,0 +1,65 @@
+﻿@model DataLayer.Entities.TaskEntity.Task
+@using DataLayer.Enums
+
+@using (Html.BeginForm("AddEdit", "Task", new { CourseWorkId = ViewBag.CourseWorkId, Id = ViewBag.TaskId }, FormMethod.Post))
+{
+    @if (User.IsInRole(Role.Lecturer.ToString()))
+    {
+        <div class="form-group input">
+            @Html.LabelFor(model => model.Comment)
+            @Html.TextBoxFor(model => model.Comment, new { @class = "form-control" })
+        </div>
+    }
+    @if (User.IsInRole(Role.Student.ToString()))
+    {
+                <div class="form-group input">
+            @Html.LabelFor(model => model.Comment)
+            @Html.TextBoxFor(model => model.Comment, new { @class = "form-control", @readonly = (string)ViewData["readonly"] })
+                </div>
+    }
+
+    @if (User.IsInRole(Role.Student.ToString()))
+    {
+        <div class="form-group input">
+            @Html.LabelFor(model => model.Status)
+            @Html.DropDownListFor(m => m.Status, Enum.GetValues(typeof(Statuses)).Cast<Statuses>().Select(x => new SelectListItem { Text = x.ToString(), Value = x.ToString(), Selected = (x == Model.Status) }), new { @class = "form-control", @disabled = (string)ViewData["disabled"] })
+        </div>
+    }
+    @if (User.IsInRole(Role.Lecturer.ToString()))
+    {
+        <div class="form-group input">
+            @Html.LabelFor(model => model.Status)
+            @Html.DropDownListFor(m => m.Status, Enum.GetValues(typeof(Statuses)).Cast<Statuses>().Select(x => new SelectListItem { Text = x.ToString(), Value = x.ToString(), Selected = (x == Model.Status) }), new { @class = "form-control" })
+        </div>
+    }
+
+    @if (User.IsInRole(Role.Lecturer.ToString()))
+    {
+        <div class="form-group input">
+            @Html.LabelFor(model => model.Priority)
+            @Html.DropDownListFor(m => m.Priority, Enum.GetValues(typeof(Priorities)).Cast<Priorities>().Select(x => new SelectListItem { Text = x.ToString(), Value = x.ToString(), Selected = (x == Model.Priority) }), new { @class = "form-control" })
+        </div>
+    }
+    @if (User.IsInRole(Role.Student.ToString()))
+    {
+        <div class="form-group input">
+            @Html.LabelFor(model => model.Priority)
+            @Html.DropDownListFor(m => m.Priority, Enum.GetValues(typeof(Priorities)).Cast<Priorities>().Select(x => new SelectListItem { Text = x.ToString(), Value = x.ToString(), Selected = (x == Model.Priority) }), new { @class = "form-control", @disabled = (string)ViewData["disabled"] })
+        </div>
+    }
+
+
+    @if (User.IsInRole(Role.Lecturer.ToString()))
+    {
+        <button type="submit" class="btn btn-primary">Зберегти</button>
+                <a asp-area="" asp-controller="Student" asp-action="GetLecturerStudents" asp-route-id="@ViewBag.CourseWorkId" class="btn btn-primary">
+            <i class="fa fa-list"></i> Назад
+        </a>
+    }
+    @if (User.IsInRole(Role.Student.ToString()))
+    {
+        <a asp-area="" asp-controller="Task" asp-action="AllStudentTasks" asp-route-id="@ViewBag.CourseWorkId" class="btn btn-primary">
+            <i class="fa fa-list"></i> Назад
+        </a>
+    }
+}

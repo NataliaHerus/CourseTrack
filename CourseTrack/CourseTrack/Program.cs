@@ -2,12 +2,13 @@ using BusinessLayer.Account;
 using BusinessLayer.CourseWorks;
 using BusinessLayer.Services;
 using BusinessLayer.Students;
-using CourseTrack.Controllers;
+using BusinessLayer.Tasks;
 using DataLayer.Account;
 using DataLayer.CourseWorks;
 using DataLayer.Data;
 using DataLayer.Lecturers;
 using DataLayer.Students;
+using DataLayer.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -84,11 +85,15 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<IJwtService, JwtService>();
 
+builder.Services.AddScoped<ITaskFacade, TaskFacade>();
+
 builder.Services.AddScoped<IAccountFacade, AccountFacade>();
 
 builder.Services.AddScoped<IStudentFacade, StudentFacade>();
 
 builder.Services.AddScoped<ICourseWorkFacade, CourseWorkFacade>();
+
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 

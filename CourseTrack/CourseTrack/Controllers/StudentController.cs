@@ -21,7 +21,7 @@ namespace CourseTrack.Controllers
         [HttpGet]
         public ActionResult Details(int id)
         {
-            Student student = _studentFacade.GetStudentById(id); 
+            Student student = _studentFacade.GetStudentById(id);
             return View(student);
         }
 

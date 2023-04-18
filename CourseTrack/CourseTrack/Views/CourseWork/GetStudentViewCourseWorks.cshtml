@@ -9,6 +9,7 @@
         <tr>
             <th>Тема</th>
             <th>Статус</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -17,6 +18,12 @@
             <tr>
                 <td>@coursework.Theme</td>
                 <td>@coursework.Status</td>
+                <td>
+                    @using (Html.BeginForm("AllStudentTasks", "Task", FormMethod.Get))
+                    {
+                        <button type="submit" class="btn btn-primary" style="margin-left: 20px;">Таски</button>
+                    }
+                </td>
             </tr>
         }
     </tbody>

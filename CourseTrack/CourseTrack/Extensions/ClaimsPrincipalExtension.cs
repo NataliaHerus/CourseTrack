@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using DataLayer.Enums;
+using System.Security.Claims;
 
 namespace CourseTrack.Extensions
 {
@@ -23,6 +24,17 @@ namespace CourseTrack.Extensions
             }
 
             var claim = principal.FindFirst("FullName");
+            return claim?.Value;
+        }
+
+        public static string? GetRole(this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                return null;
+            }
+
+            var claim = principal.FindFirst(ClaimTypes.Role);
             return claim?.Value;
         }
     }

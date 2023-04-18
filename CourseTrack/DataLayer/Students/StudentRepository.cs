@@ -1,11 +1,6 @@
 ﻿using DataLayer.Data;
 using DataLayer.Entities.StudentEntity;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataLayer.Students
 {
@@ -19,7 +14,7 @@ namespace DataLayer.Students
 
         public async Task<Student> DeleteStudent(Student student)
         {
-            await Task.Run(() => _dbContext.Students!.Remove(student));
+            await System.Threading.Tasks.Task.Run(() => _dbContext.Students!.Remove(student));
             return student;
         }
 

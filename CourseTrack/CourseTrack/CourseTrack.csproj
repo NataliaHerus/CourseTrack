@@ -11,8 +11,22 @@
 		<AnalysisMode>AllEnabledByDefault</AnalysisMode>
 		<UserSecretsId>e637ff5b-9b90-4d87-88b8-d053c91a1fed</UserSecretsId>
 	</PropertyGroup>
-	
-  <ItemGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <WarningLevel>0</WarningLevel>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <WarningLevel>0</WarningLevel>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<NoWarn>NU1701;CS0168;CS0219</NoWarn>
+	</PropertyGroup>
+	<PropertyGroup>
+		<NoWarn>CA5391;CS8602</NoWarn>
+	</PropertyGroup>
+	<ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 

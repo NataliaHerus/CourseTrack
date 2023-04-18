@@ -2,10 +2,12 @@
 using BusinessLayer.Students;
 using DataLayer.Entities.CourseWorkEntity;
 using DataLayer.Entities.StudentEntity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CourseTrack.Controllers
 {
+    [Authorize]
     public class CourseWorkController : Controller
     {
         private readonly ICourseWorkFacade _courseWorkFacade;
