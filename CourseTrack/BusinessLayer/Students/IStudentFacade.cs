@@ -11,12 +11,12 @@ namespace BusinessLayer.Students
 {
     public interface IStudentFacade
     {
-        Student DeleteStudentFromLecturer(int id);
-        Student AddStudentToLecturer(int id);
-        Student DeleteStudent(int id);
-        Student GetStudentById(int id);
-        List<Student> GetAllStudentsList();
+        StudentDto DeleteStudentFromLecturer(int id);
+        StudentDto AddStudentToLecturer(int id);
+        StudentDto DeleteStudent(int id);
+        StudentDto GetStudentById(int id);
+        List<StudentDto> GetAllStudentsList();
 
-        List<Student> GetLecturerStudentsList();
+        List<StudentDto> GetLecturerStudentsList();
     }
 }

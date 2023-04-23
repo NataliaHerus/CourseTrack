@@ -1,4 +1,5 @@
-﻿using BusinessLayer.Models;
+﻿using AutoMapper;
+using BusinessLayer.Models;
 using BusinessLayer.Services;
 using DataLayer.Account;
 using DataLayer.CourseWorks;
@@ -22,56 +23,59 @@ namespace BusinessLayer.Students
         private readonly ILecturerRepository _lecturerRepository;
         private readonly ICourseWorkRepository _courseWorkRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        protected readonly IMapper _mapper;
 
         public StudentFacade(IStudentRepository studentRepository, IHttpContextAccessor httpContextAccessor,
-            ILecturerRepository lecturerRepository, ICourseWorkRepository courseWorkRepository)
+            ILecturerRepository lecturerRepository, ICourseWorkRepository courseWorkRepository, IMapper mapper)
         {
             _httpContextAccessor = httpContextAccessor;
             _studentRepository = studentRepository;
             _lecturerRepository = lecturerRepository;
             _courseWorkRepository = courseWorkRepository;
+            _mapper = mapper;
         }
-        public Student DeleteStudentFromLecturer(int id)
+        public StudentDto DeleteStudentFromLecturer(int id)
         {
             var student = _studentRepository.GetStudentById(id);
             student.LecturerId = null;
             _studentRepository.UpdateStudent(student);
-            _studentRepository.SaveChangesAcync();
-            return student;
+            _studentRepository.SaveChangesAsync();
+            return _mapper.Map<StudentDto>(student);
         }
 
-        public Student AddStudentToLecturer(int id)
+        public StudentDto AddStudentToLecturer(int id)
         {
             var student = _studentRepository.GetStudentById(id);
             Lecturer lecturer = _lecturerRepository.GetLecturerByEmail(_httpContextAccessor.HttpContext.User.Identity.Name);
             student.LecturerId = lecturer.Id;
             _studentRepository.UpdateStudent(student);
-            _studentRepository.SaveChangesAcync();
-            return student;
+            _studentRepository.SaveChangesAsync();
+            return _mapper.Map<StudentDto>(student);
         }
-        public Student DeleteStudent(int id)
+        public StudentDto DeleteStudent(int id)
         {
             var student = _studentRepository.GetStudentById(id);
             _studentRepository.DeleteStudent(student);
-            return student;
+            return _mapper.Map<StudentDto>(student);
         }
 
-        public List<Student> GetAllStudentsList()
+        public List<StudentDto> GetAllStudentsList()
         {
-            return _studentRepository.GetAllStudentsList();
+            return _mapper.Map<List<StudentDto>>(_studentRepository.GetAllStudentsList());
         }
 
-        public Student GetStudentById(int id)
+        public StudentDto GetStudentById(int id)
         {
             var student = _studentRepository.GetStudentById(id);
-            return student;
+            return _mapper.Map<StudentDto>(student);
         }
 
-        public List<Student> GetLecturerStudentsList()
+        public List<StudentDto> GetLecturerStudentsList()
         {
             Lecturer lecturer = _lecturerRepository.GetLecturerByEmail(_httpContextAccessor.HttpContext.User.Identity.Name);
             int id = lecturer.Id;
-            return _studentRepository.GetAllLecturerStudentsList(id);
+            List<Student> students = _studentRepository.GetAllLecturerStudentsList(id);
+            return _mapper.Map<List<StudentDto>>(students);
         }
     }
 }

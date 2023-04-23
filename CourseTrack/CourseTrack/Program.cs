@@ -1,8 +1,12 @@
+using AutoMapper;
+using BusinessLayer;
 using BusinessLayer.Account;
 using BusinessLayer.CourseWorks;
+using BusinessLayer.Models;
 using BusinessLayer.Services;
 using BusinessLayer.Students;
 using BusinessLayer.Tasks;
+using CourseTrack.Models;
 using DataLayer.Account;
 using DataLayer.CourseWorks;
 using DataLayer.Data;
@@ -107,6 +111,16 @@ builder.Services.AddControllers();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+var mapperConfig = new MapperConfiguration(mc =>
+{
+    mc.AddProfile(new AutoMapperProfile());
+    mc.CreateMap<StudentDto, StudentViewModel>().ReverseMap();
+    mc.CreateMap<CourseWorkDto, CourseWorkViewModel>().ReverseMap();
+});
+
+IMapper mapper = mapperConfig.CreateMapper();
+builder.Services.AddSingleton(mapper);
 
 var app = builder.Build();
 

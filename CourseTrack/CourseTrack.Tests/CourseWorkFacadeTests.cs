@@ -1,4 +1,6 @@
-﻿using BusinessLayer.CourseWorks;
+﻿using AutoMapper;
+using BusinessLayer.CourseWorks;
+using BusinessLayer.Models;
 using BusinessLayer.Students;
 using DataLayer.CourseWorks;
 using DataLayer.Entities.CourseWorkEntity;
@@ -9,6 +11,7 @@ using DataLayer.Lecturers;
 using DataLayer.Students;
 using Microsoft.AspNetCore.Http;
 using Moq;
+using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,8 +27,9 @@ namespace CourseTrack.Tests
         private Mock<ILecturerRepository> _lecturerRepositoryMock;
         private Mock<ICourseWorkRepository> _courseWorkRepositoryMock;
         private Mock<IHttpContextAccessor> _httpContextAccessorMock;
+        private Mock<IMapper> _mapperMock;
 
-        private ICourseWorkFacade _courceWorkFacade;
+        private ICourseWorkFacade _courseWorkFacade;
 
         [SetUp]
         public void Setup()
@@ -33,128 +37,131 @@ namespace CourseTrack.Tests
             _studentkRepositoryMock = new Mock<IStudentRepository>();
             _lecturerRepositoryMock = new Mock<ILecturerRepository>();
             _courseWorkRepositoryMock = new Mock<ICourseWorkRepository>();
-            _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
 
-            _courceWorkFacade = new CourseWorkFacade(_courseWorkRepositoryMock.Object, _httpContextAccessorMock.Object,
-                _lecturerRepositoryMock.Object, _studentkRepositoryMock.Object);
+            var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+            httpContextAccessorMock.Setup(x => x.HttpContext.User.Identity.Name).Returns("test@example.com");
+            _httpContextAccessorMock = httpContextAccessorMock;
+            _mapperMock = new Mock<IMapper>();
+
+            _courseWorkFacade = new CourseWorkFacade(_courseWorkRepositoryMock.Object, _httpContextAccessorMock.Object,
+                _lecturerRepositoryMock.Object, _studentkRepositoryMock.Object, _mapperMock.Object);
         }
-
         [Test]
         public async Task ChangeCourseWork_UpdatesCourseWorkAndReturnsUpdatedCourseWork()
         {
-            // Arrange
-            var courseWork = new CourseWork { Id = 1, Status = Statuses.InProgress, Theme = "Math" };
-            var updatedCourseWork = new CourseWork { Id = 1, Status = Statuses.Done, Theme = "History" };
-            var courseWorkRepositoryMock = new Mock<ICourseWorkRepository>();
-            courseWorkRepositoryMock.Setup(x => x.GetCourseWorkById(courseWork.Id)).Returns(updatedCourseWork);
-            var service = new CourseWorkFacade(courseWorkRepositoryMock.Object, null, null, null);
+            var inputDto = new CourseWorkDto { Id = 1, Status = Statuses.InProgress, Theme = "My Coursework" };
+            var courseWork = new CourseWork { Id = 1, Status = Statuses.Done, Theme = "Old Coursework" };
+            _courseWorkRepositoryMock.Setup(x => x.GetCourseWorkById(inputDto.Id)).Returns(courseWork);
 
             // Act
-            var result = await service.ChangeCourseWork(courseWork);
+            var result = await _courseWorkFacade.ChangeCourseWork(inputDto);
 
             // Assert
-            Assert.AreEqual(updatedCourseWork.Id, result.Id);
-            Assert.AreEqual(updatedCourseWork.Status, result.Status);
-            Assert.AreEqual(updatedCourseWork.Theme, result.Theme);
-            courseWorkRepositoryMock.Verify(x => x.UpdateCourseWork(updatedCourseWork), Times.Once);
-            courseWorkRepositoryMock.Verify(x => x.SaveChangesAcync(), Times.Once);
+            _courseWorkRepositoryMock.Verify(x => x.UpdateCourseWork(courseWork), Times.Once);
+            _courseWorkRepositoryMock.Verify(x => x.SaveChangesAsync(), Times.Once);
+            Assert.AreEqual(inputDto.Status, courseWork.Status);
+            Assert.AreEqual(inputDto.Theme, courseWork.Theme);
         }
+
 
         [Test]
-        public async Task CreateCourseWorks_CreatesAndReturnsNewCourseWork()
+        public async Task CreateCourseWorks_ShouldReturnNewCourseWorkDto()
         {
-            // Arrange
-            var theme = "Math";
+
+            var theme = "Test Theme";
             var studentId = 1;
-            var lecturerId = 2;
-            var newCourseWork = new CourseWork {Id = 1, Theme = theme, StudentId = studentId, Status = Statuses.New, LecturerId = lecturerId };
-            var lecturerRepositoryMock = new Mock<ILecturerRepository>();
-            lecturerRepositoryMock.Setup(x => x.GetLecturerByEmail(It.IsAny<string>())).Returns(new Lecturer { Id = lecturerId });
-            var courseWorkRepositoryMock = new Mock<ICourseWorkRepository>();
-            courseWorkRepositoryMock.Setup(x => x.CreateCourseWorks(It.IsAny<CourseWork>())).Callback((CourseWork c) => c.Id = 1);
-            var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
-            httpContextAccessorMock.Setup(x => x.HttpContext.User.Identity.Name).Returns("test@example.com");
-            var service = new CourseWorkFacade(courseWorkRepositoryMock.Object, httpContextAccessorMock.Object, lecturerRepositoryMock.Object, null);
+
+            var lecturer = new Lecturer() { Id = 1, Email = "test@test.com" };
+            _lecturerRepositoryMock.Setup(x => x.GetLecturerByEmail(It.IsAny<string>())).Returns(lecturer);
+
+            var newCourseWork = new CourseWork() { Id = 1, Theme = theme, StudentId = studentId, Status = Statuses.New, LecturerId = lecturer.Id };
+            _courseWorkRepositoryMock.Setup(x => x.CreateCourseWorks(It.IsAny<CourseWork>())).Callback<CourseWork>(c => newCourseWork = c);
+
+            var expectedCourseWorkDto = new CourseWorkDto()
+            {
+                Id = newCourseWork.Id,
+                Theme = newCourseWork.Theme,
+                StudentId = newCourseWork.StudentId,
+                Status = newCourseWork.Status
+            };
+
+
+            _mapperMock.Setup(x => x.Map<CourseWorkDto>(It.IsAny<CourseWork>())).Returns(expectedCourseWorkDto);
 
             // Act
-            var result = await service.CreateCourseWorks(theme, studentId);
+            var result = await _courseWorkFacade.CreateCourseWorks(theme, studentId);
 
             // Assert
-            Assert.AreEqual(newCourseWork.Id, result.Id);
-            Assert.AreEqual(newCourseWork.Theme, result.Theme);
-            Assert.AreEqual(newCourseWork.StudentId, result.StudentId);
-            Assert.AreEqual(newCourseWork.Status, result.Status);
-            Assert.AreEqual(newCourseWork.LecturerId, result.LecturerId);
-            courseWorkRepositoryMock.Verify(x => x.CreateCourseWorks(It.IsAny<CourseWork>()), Times.Once);
-            courseWorkRepositoryMock.Verify(x => x.SaveChangesAcync(), Times.Once);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(expectedCourseWorkDto.Id, result.Id);
+            Assert.AreEqual(expectedCourseWorkDto.Theme, result.Theme);
+            Assert.AreEqual(expectedCourseWorkDto.StudentId, result.StudentId);
+            Assert.AreEqual(expectedCourseWorkDto.Status, result.Status);
+
+            _lecturerRepositoryMock.Verify(x => x.GetLecturerByEmail(It.IsAny<string>()), Times.Once);
+            _courseWorkRepositoryMock.Verify(x => x.CreateCourseWorks(It.IsAny<CourseWork>()), Times.Once);
+            _courseWorkRepositoryMock.Verify(x => x.SaveChangesAsync(), Times.Once);
+            _mapperMock.Verify(x => x.Map<CourseWorkDto>(It.IsAny<CourseWork>()), Times.Once);
         }
+
 
         [Test]
         public void GetStudentCourseWorks_ReturnsListOfCourseWorks()
         {
-            // Arrange
             var studentId = 1;
-            var courseWorks = new List<CourseWork>
-    {
-        new CourseWork { Id = 1, Theme = "Math", StudentId = studentId, Status = Statuses.New, LecturerId = 2 },
-        new CourseWork { Id = 2, Theme = "Science", StudentId = studentId, Status = Statuses.InProgress, LecturerId = 2 }
-    };
-            var courseWorkRepositoryMock = new Mock<ICourseWorkRepository>();
-            courseWorkRepositoryMock.Setup(x => x.GetAllStudentCourseWorks(studentId)).Returns(courseWorks);
-            var service = new CourseWorkFacade(courseWorkRepositoryMock.Object, null, null, null);
+
+            var courseWorks = new List<CourseWork>()
+{
+    new CourseWork() { Id = 1, Theme = "Test Theme 1", StudentId = studentId },
+    new CourseWork() { Id = 2, Theme = "Test Theme 2", StudentId = studentId },
+    new CourseWork() { Id = 3, Theme = "Test Theme 3", StudentId = studentId }
+};
+
+            var expectedCourseWorkDtos = new List<CourseWorkDto>()
+{
+    new CourseWorkDto() { Id = 1, Theme = "Test Theme 1", StudentId = studentId },
+    new CourseWorkDto() { Id = 2, Theme = "Test Theme 2", StudentId = studentId },
+    new CourseWorkDto() { Id = 3, Theme = "Test Theme 3", StudentId = studentId }
+};
+
+            _courseWorkRepositoryMock.Setup(x => x.GetAllStudentCourseWorks(studentId)).Returns(courseWorks);
+            _mapperMock.Setup(x => x.Map<List<CourseWorkDto>>(It.IsAny<List<CourseWork>>())).Returns(expectedCourseWorkDtos);
 
             // Act
-            var result = service.GetStudentCourseWorks(studentId);
+            var result = _courseWorkFacade.GetStudentCourseWorks(studentId);
 
             // Assert
-            Assert.AreEqual(courseWorks.Count, result.Count);
-            Assert.AreEqual(courseWorks[0].Id, result[0].Id);
-            Assert.AreEqual(courseWorks[0].Theme, result[0].Theme);
-            Assert.AreEqual(courseWorks[0].StudentId, result[0].StudentId);
-            Assert.AreEqual(courseWorks[0].Status, result[0].Status);
-            Assert.AreEqual(courseWorks[0].LecturerId, result[0].LecturerId);
-            Assert.AreEqual(courseWorks[1].Id, result[1].Id);
-            Assert.AreEqual(courseWorks[1].Theme, result[1].Theme);
-            Assert.AreEqual(courseWorks[1].StudentId, result[1].StudentId);
-            Assert.AreEqual(courseWorks[1].Status, result[1].Status);
-            Assert.AreEqual(courseWorks[1].LecturerId, result[1].LecturerId);
-            courseWorkRepositoryMock.Verify(x => x.GetAllStudentCourseWorks(studentId), Times.Once);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(expectedCourseWorkDtos.Count, result.Count);
+
+            for (int i = 0; i < expectedCourseWorkDtos.Count; i++)
+            {
+                Assert.AreEqual(expectedCourseWorkDtos[i].Id, result[i].Id);
+                Assert.AreEqual(expectedCourseWorkDtos[i].Theme, result[i].Theme);
+                Assert.AreEqual(expectedCourseWorkDtos[i].StudentId, result[i].StudentId);
+            }
+
+            _courseWorkRepositoryMock.Verify(x => x.GetAllStudentCourseWorks(studentId), Times.Once);
+            _mapperMock.Verify(x => x.Map<List<CourseWorkDto>>(It.IsAny<List<CourseWork>>()), Times.Once);
         }
 
         [Test]
         public void GetStudentCourseWorksByEmail_ShouldReturnCorrectCourseWorks()
         {
-            // Arrange
-            var expectedCourseWorks = new List<CourseWork>
-    {
-        new CourseWork { Id = 1, Theme = "Course Work 1", StudentId = 1, Status = Statuses.New, LecturerId = 1 },
-        new CourseWork { Id = 2, Theme = "Course Work 2", StudentId = 1, Status = Statuses.InProgress, LecturerId = 2 }
-    };
-            var student = new Student { Id = 1, Email = "john.doe@example.com", LecturerId = 1 };
+            var student = new Student { Email = "test@example.com" };
+            var courseWorks = new List<CourseWork> { new CourseWork { Id = 1, Theme = "Test CourseWork 1" }, new CourseWork { Id = 2, Theme = "Test CourseWork 2" } };
+            var courseWorkDtos = new List<CourseWorkDto> { new CourseWorkDto { Id = 1, Theme = "Test CourseWork 1" }, new CourseWorkDto { Id = 2, Theme = "Test CourseWork 2" } };
 
-            // Mock the dependencies
-            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
-            mockHttpContextAccessor.Setup(x => x.HttpContext.User.Identity.Name).Returns(student.Email);
-            var mockStudentRepository = new Mock<IStudentRepository>();
-            mockStudentRepository.Setup(x => x.GetStudentByEmail(student.Email)).Returns(student);
-            var mockCourseWorkRepository = new Mock<ICourseWorkRepository>();
-            mockCourseWorkRepository.Setup(x => x.GetAllStudentCourseWorksByEmail(student.Email)).Returns(expectedCourseWorks);
+           _httpContextAccessorMock.Setup(x => x.HttpContext.User.Identity.Name).Returns(student.Email);
+            _studentkRepositoryMock.Setup(x => x.GetStudentByEmail(student.Email)).Returns(student);
+            _courseWorkRepositoryMock.Setup(x => x.GetAllStudentCourseWorksByEmail(student.Email)).Returns(courseWorks);
+            _mapperMock.Setup(x => x.Map<List<CourseWorkDto>>(courseWorks)).Returns(courseWorkDtos);
 
-            // Create the service instance and call the method
-            var service = new CourseWorkFacade(mockCourseWorkRepository.Object, mockHttpContextAccessor.Object, null, mockStudentRepository.Object);
-            var result = service.GetStudentCourseWorksByEmail();
+            // Act
+            var result = _courseWorkFacade.GetStudentCourseWorksByEmail();
 
-            // Assert the result
-            Assert.AreEqual(expectedCourseWorks.Count, result.Count);
-            for (int i = 0; i < expectedCourseWorks.Count; i++)
-            {
-                Assert.AreEqual(expectedCourseWorks[i].Id, result[i].Id);
-                Assert.AreEqual(expectedCourseWorks[i].Theme, result[i].Theme);
-                Assert.AreEqual(expectedCourseWorks[i].StudentId, result[i].StudentId);
-                Assert.AreEqual(expectedCourseWorks[i].Status, result[i].Status);
-                Assert.AreEqual(expectedCourseWorks[i].LecturerId, result[i].LecturerId);
-            }
+            // Assert
+            Assert.AreEqual(courseWorkDtos, result);
         }
-
     }
 }

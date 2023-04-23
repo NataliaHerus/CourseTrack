@@ -35,7 +35,7 @@ namespace DataLayer.CourseWorks
             return _dbContext.CourseWorks.Where(x => x.StudentId == studentId).ToList();
         }
 
-        public CourseWork GetCourseWorkById(int id)
+        public CourseWork GetCourseWorkById(int? id)
         {
             return _dbContext.CourseWorks!.FirstOrDefault(x => x.Id == id);
         }
@@ -46,7 +46,7 @@ namespace DataLayer.CourseWorks
             return courseWork;
         }
 
-        public async Task<int> SaveChangesAcync()
+        public async Task<int> SaveChangesAsync()
         {
             return await _dbContext.SaveChangesAsync();
         }

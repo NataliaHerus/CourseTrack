@@ -1,5 +1,8 @@
-﻿using BusinessLayer.CourseWorks;
+﻿using AutoMapper;
+using BusinessLayer.CourseWorks;
+using BusinessLayer.Models;
 using BusinessLayer.Students;
+using CourseTrack.Models;
 using DataLayer.Entities.CourseWorkEntity;
 using DataLayer.Entities.StudentEntity;
 using Microsoft.AspNetCore.Authorization;
@@ -11,31 +14,34 @@ namespace CourseTrack.Controllers
     public class CourseWorkController : Controller
     {
         private readonly ICourseWorkFacade _courseWorkFacade;
+        private readonly IMapper _mapper;
 
-        public CourseWorkController(ICourseWorkFacade courseWorkFacade)
+        public CourseWorkController(ICourseWorkFacade courseWorkFacade, IMapper mapper)
         {
             _courseWorkFacade = courseWorkFacade;
+            _mapper = mapper;
         }
 
         [HttpGet]
         public ActionResult GetStudentCoursWorks([FromRoute] int Id)
         {
-            IEnumerable<CourseWork> courseWorks = _courseWorkFacade.GetStudentCourseWorks(Id);
+            IEnumerable<CourseWorkDto> courseWorks = _courseWorkFacade.GetStudentCourseWorks(Id);
             ViewBag.Id = Id;
-            return View(courseWorks);
+            return View(_mapper.Map<IEnumerable<CourseWorkViewModel>>(courseWorks));
         }
 
         [HttpGet]
         public ActionResult GetStudentViewCourseWorks()
         {
-            IEnumerable<CourseWork> courseWorks = _courseWorkFacade.GetStudentCourseWorksByEmail();
-            return View(courseWorks);
+            IEnumerable<CourseWorkDto> courseWorks = _courseWorkFacade.GetStudentCourseWorksByEmail();
+            return View(_mapper.Map<IEnumerable<CourseWorkViewModel>>(courseWorks));
         }
 
         [HttpPost]
-        public ActionResult UpdateCourseWork(CourseWork courseWork)
+        public ActionResult UpdateCourseWork(CourseWorkViewModel courseWork)
         {
-            _courseWorkFacade.ChangeCourseWork(courseWork);
+            CourseWorkDto courseWorkToUpdate = _mapper.Map<CourseWorkDto>(courseWork);
+            _courseWorkFacade.ChangeCourseWork(courseWorkToUpdate);
             TempData["Message"] = "Курсову роботу відредаговано";
             return RedirectToAction("GetStudentCoursWorks", new { Id = courseWork.StudentId });
         }

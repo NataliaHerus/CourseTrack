@@ -1,6 +1,6 @@
 ﻿@using DataLayer.Entities.StudentEntity
 @using CourseTrack.Controllers
-@model IEnumerable<Student>
+@model IEnumerable<StudentViewModel>
 
 
 <style>
@@ -57,7 +57,7 @@ else
                 <td>@student.Email</td>
                 <td>
                     <form method="post" asp-action="AddStudent" asp-route-id="@student.Id">
-                        <button type="submit">Додати студнта</button>
+                        <button type="submit">Додати студента</button>
                     </form>
                 </td>
             </tr>

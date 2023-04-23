@@ -14,9 +14,9 @@ namespace DataLayer.CourseWorks
 
         List<CourseWork> GetAllStudentCourseWorksByEmail(string email);
         CourseWork CreateCourseWorks(CourseWork courseWork);
-        CourseWork GetCourseWorkById(int id);
+        CourseWork GetCourseWorkById(int? id);
         CourseWork UpdateCourseWork(CourseWork courseWork);
 
-        Task<int> SaveChangesAcync();
+        Task<int> SaveChangesAsync();
     }
 }

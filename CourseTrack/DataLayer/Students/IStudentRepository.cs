@@ -17,7 +17,7 @@ namespace DataLayer.Students
 
         List<Student> GetAllLecturerStudentsList(int lecturerId);
         Student? GetStudentById(int id);
-        Task<int> SaveChangesAcync();
+        Task<int> SaveChangesAsync();
 
         Student? GetStudentByEmail(string email);
     }

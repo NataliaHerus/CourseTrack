@@ -22,6 +22,15 @@
 		<NoWarn>CA5391;CS8602</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
+	  <None Remove="GetLecturerStudents.cshtml" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Content Include="GetLecturerStudents.cshtml">
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
+	</ItemGroup>
+	<ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
     <PackageReference Include="Moq" Version="4.18.4" />
     <PackageReference Include="NSubstitute" Version="5.0.0" />

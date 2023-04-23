@@ -37,7 +37,7 @@ namespace DataLayer.Students
         {
             return _dbContext.Students!.FirstOrDefault(x => x.Id == id);
         }
-        public async Task<int> SaveChangesAcync()
+        public async Task<int> SaveChangesAsync()
         {
             return await _dbContext.SaveChangesAsync();
         }

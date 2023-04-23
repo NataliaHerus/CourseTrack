@@ -13,7 +13,7 @@ namespace DataLayer.Entities.CourseWorkEntity
 {
     public class CourseWork
     {
-        public int Id { get; set; }
+        public int? Id { get; set; }
         public string? Theme { get; set; }
         public Statuses Status { get; set; }
 

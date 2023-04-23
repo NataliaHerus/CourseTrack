@@ -1,4 +1,6 @@
-﻿using BusinessLayer.Students;
+﻿using AutoMapper;
+using BusinessLayer.Models;
+using BusinessLayer.Students;
 using DataLayer.CourseWorks;
 using DataLayer.Entities.LecturerEntity;
 using DataLayer.Entities.StudentEntity;
@@ -21,6 +23,7 @@ namespace CourseTrack.Tests
         private Mock<ILecturerRepository> _lecturerRepositoryMock;
         private Mock<ICourseWorkRepository> _courseWorkRepositoryMock;
         private Mock<IHttpContextAccessor> _httpContextAccessorMock;
+        private Mock<IMapper> _mapperMock;
 
         private IStudentFacade _studentFacade;
 
@@ -31,9 +34,10 @@ namespace CourseTrack.Tests
             _lecturerRepositoryMock = new Mock<ILecturerRepository>();
             _courseWorkRepositoryMock = new Mock<ICourseWorkRepository>();
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+            _mapperMock = new Mock<IMapper>();
 
             _studentFacade = new StudentFacade(_studentRepositoryMock.Object, _httpContextAccessorMock.Object,
-                _lecturerRepositoryMock.Object, _courseWorkRepositoryMock.Object);
+                _lecturerRepositoryMock.Object, _courseWorkRepositoryMock.Object, _mapperMock.Object);
         }
 
         [Test]
@@ -44,14 +48,22 @@ namespace CourseTrack.Tests
             var student = new Student { Id = studentId, LecturerId = 2 };
             _studentRepositoryMock.Setup(r => r.GetStudentById(studentId)).Returns(student);
 
+            var studentDto = new StudentDto { Id = studentId, LecturerId = null };
+            _mapperMock.Setup(m => m.Map<StudentDto>(student)).Returns(studentDto);
+
+            var service = new StudentFacade(_studentRepositoryMock.Object, null, null, null, _mapperMock.Object);
+
             // Act
             var result = _studentFacade.DeleteStudentFromLecturer(studentId);
 
             // Assert
-            Assert.AreEqual(null, result.LecturerId);
+            Assert.IsNull(result.LecturerId);
             _studentRepositoryMock.Verify(r => r.UpdateStudent(student), Times.Once);
-            _studentRepositoryMock.Verify(r => r.SaveChangesAcync(), Times.Once);
+            _studentRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+            _mapperMock.Verify(m => m.Map<StudentDto>(student), Times.Once);
+            Assert.AreEqual(studentDto, result);
         }
+
 
         [Test]
         public void AddStudentToLecturer_ShouldSetLecturerIdAndUpdateStudent()
@@ -64,46 +76,50 @@ namespace CourseTrack.Tests
             var student = new Student { Id = studentId };
             var lecturer = new Lecturer { Id = lecturerId, Email = lecturerEmail };
 
-            var studentRepositoryMock = new Mock<IStudentRepository>();
-            studentRepositoryMock.Setup(r => r.GetStudentById(studentId)).Returns(student);
+            _studentRepositoryMock.Setup(r => r.GetStudentById(studentId)).Returns(student);
 
-            var lecturerRepositoryMock = new Mock<ILecturerRepository>();
-            lecturerRepositoryMock.Setup(r => r.GetLecturerByEmail(lecturerEmail)).Returns(lecturer);
+            _lecturerRepositoryMock.Setup(r => r.GetLecturerByEmail(lecturerEmail)).Returns(lecturer);
 
-            var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
-            httpContextAccessorMock.Setup(a => a.HttpContext.User.Identity.Name).Returns(lecturerEmail);
+            _httpContextAccessorMock.Setup(a => a.HttpContext.User.Identity.Name).Returns(lecturerEmail);
 
-            var service = new StudentFacade(studentRepositoryMock.Object, httpContextAccessorMock.Object, lecturerRepositoryMock.Object, null);
+
+            var studentDto = new StudentDto { Id = studentId };
+            _mapperMock.Setup(m => m.Map<StudentDto>(student)).Returns(studentDto);
 
             // Act
-            var result = service.AddStudentToLecturer(studentId);
+            var result = _studentFacade.AddStudentToLecturer(studentId);
 
             // Assert
             Assert.AreEqual(lecturerId, student.LecturerId);
-            studentRepositoryMock.Verify(r => r.UpdateStudent(student), Times.Once);
-            studentRepositoryMock.Verify(r => r.SaveChangesAcync(), Times.Once);
-            Assert.AreEqual(student, result);
+            _studentRepositoryMock.Verify(r => r.UpdateStudent(student), Times.Once);
+            _studentRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+            _mapperMock.Verify(m => m.Map<StudentDto>(student), Times.Once);
+            Assert.AreEqual(studentDto, result);
         }
 
 
+
         [Test]
-        public void DeleteStudent_WithValidId_ShouldDeleteStudentAndReturnIt()
+        public void DeleteStudentFromLecturer_WithValidId_ShouldSetLecturerIdToNullAndReturnStudentDto()
         {
             // Arrange
-            var studentId = 1;
-            var student = new Student { Id = studentId };
+            int studentId = 1;
+            var student = new Student { Id = studentId, LecturerId = 2 };
+            _studentRepositoryMock.Setup(r => r.GetStudentById(studentId)).Returns(student);
 
-            var studentRepositoryMock = new Mock<IStudentRepository>();
-            studentRepositoryMock.Setup(r => r.GetStudentById(studentId)).Returns(student);
+            var studentDto = new StudentDto { Id = studentId };
+            _mapperMock.Setup(m => m.Map<StudentDto>(student)).Returns(studentDto);
 
-            var service = new StudentFacade(studentRepositoryMock.Object, null, null, null);
 
             // Act
-            var result = service.DeleteStudent(studentId);
+            var result = _studentFacade.DeleteStudentFromLecturer(studentId);
 
             // Assert
-            studentRepositoryMock.Verify(r => r.DeleteStudent(student), Times.Once);
-            Assert.AreEqual(student, result);
+            Assert.IsNull(result.LecturerId);
+            _studentRepositoryMock.Verify(r => r.UpdateStudent(student), Times.Once);
+            _studentRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+            _mapperMock.Verify(m => m.Map<StudentDto>(student), Times.Once);
+            Assert.AreEqual(studentDto, result);
         }
 
         [Test]
@@ -117,16 +133,21 @@ namespace CourseTrack.Tests
         new Student { Id = 3, FirstName = "Bob Johnson" }
     };
 
-            var studentRepositoryMock = new Mock<IStudentRepository>();
-            studentRepositoryMock.Setup(r => r.GetAllStudentsList()).Returns(students);
+            var expectedStudents = new List<StudentDto>
+    {
+         new StudentDto { Id = 1, FirstName = "John Doe" },
+        new StudentDto { Id = 2, FirstName = "Jane Smith" },
+        new StudentDto { Id = 3, FirstName = "Bob Johnson" }
+    };
 
-            var service = new StudentFacade(studentRepositoryMock.Object, null, null, null);
+            _mapperMock.Setup(m => m.Map<List<StudentDto>>(students)).Returns(expectedStudents);
+            _studentRepositoryMock.Setup(r => r.GetAllStudentsList()).Returns(students);
 
             // Act
-            var result = service.GetAllStudentsList();
+            var result = _studentFacade.GetAllStudentsList();
 
             // Assert
-            Assert.IsInstanceOf<List<Student>>(result);
+            Assert.IsInstanceOf<List<StudentDto>>(result);
             Assert.AreEqual(students.Count, result.Count);
             for (int i = 0; i < students.Count; i++)
             {
@@ -136,23 +157,27 @@ namespace CourseTrack.Tests
         }
 
         [Test]
-        public void GetStudentById_WithValidId_ShouldReturnStudent()
+        public void GetStudentById_WithValidId_ShouldReturnStudentDto()
         {
             // Arrange
             var studentId = 1;
             var student = new Student { Id = studentId };
 
-            var studentRepositoryMock = new Mock<IStudentRepository>();
-            studentRepositoryMock.Setup(r => r.GetStudentById(studentId)).Returns(student);
+            _studentRepositoryMock.Setup(r => r.GetStudentById(studentId)).Returns(student);
 
-            var service = new StudentFacade(studentRepositoryMock.Object, null, null, null);
+
+            var studentDto = new StudentDto { Id = studentId };
+            _mapperMock.Setup(m => m.Map<StudentDto>(student)).Returns(studentDto);
+
 
             // Act
-            var result = service.GetStudentById(studentId);
+            var result = _studentFacade.GetStudentById(studentId);
 
             // Assert
-            Assert.AreEqual(student, result);
+            _mapperMock.Verify(m => m.Map<StudentDto>(student), Times.Once);
+            Assert.AreEqual(studentDto, result);
         }
+
 
         [Test]
         public void GetLecturerStudentsList_ShouldReturnListOfStudents()
@@ -167,27 +192,31 @@ namespace CourseTrack.Tests
         new Student { Id = 3, FirstName = "Bob Johnson", LecturerId = 2 }
     };
 
-            var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+            var expectedStudents = new List<StudentDto>
+    {
+        new StudentDto { Id = 1, FirstName = "John Doe", LecturerId = lecturer.Id },
+        new StudentDto { Id = 2, FirstName = "Jane Smith", LecturerId = lecturer.Id }
+    };
+
+            _mapperMock.Setup(m => m.Map<List<StudentDto>>(students)).Returns(expectedStudents);
+
             var userMock = new Mock<ClaimsPrincipal>();
             userMock.Setup(u => u.Identity.Name).Returns(lecturerEmail);
-            httpContextAccessorMock.Setup(a => a.HttpContext.User).Returns(userMock.Object);
+            _httpContextAccessorMock.Setup(a => a.HttpContext.User).Returns(userMock.Object);
 
-            var lecturerRepositoryMock = new Mock<ILecturerRepository>();
-            lecturerRepositoryMock.Setup(r => r.GetLecturerByEmail(lecturerEmail)).Returns(lecturer);
+            _lecturerRepositoryMock.Setup(r => r.GetLecturerByEmail(lecturerEmail)).Returns(lecturer);
 
-            var studentRepositoryMock = new Mock<IStudentRepository>();
-            studentRepositoryMock.Setup(r => r.GetAllLecturerStudentsList(lecturer.Id)).Returns(students);
+            _studentRepositoryMock.Setup(r => r.GetAllLecturerStudentsList(lecturer.Id)).Returns(students);
 
-            var service = new StudentFacade(studentRepositoryMock.Object, httpContextAccessorMock.Object, lecturerRepositoryMock.Object, null);
 
             // Act
-            var result = service.GetLecturerStudentsList();
+            var result = _studentFacade.GetLecturerStudentsList();
 
             // Assert
-            Assert.IsInstanceOf<List<Student>>(result);
-            Assert.AreEqual(3, result.Count);
+            Assert.IsInstanceOf<List<StudentDto>>(result);
+            Assert.AreEqual(2, result.Count);
+            Assert.AreEqual(expectedStudents, result);
         }
-
 
     }
 }
