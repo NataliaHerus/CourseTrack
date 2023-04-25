@@ -1,6 +1,7 @@
-﻿using BusinessLayer.Tasks;
+﻿using BusinessLayer.Models;
+using BusinessLayer.Tasks;
 using CourseTrack.Extensions;
-using DataLayer.Entities.CourseWorkEntity;
+using CourseTrack.Models;
 using DataLayer.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +24,12 @@ namespace CourseTrack.Controllers
         public ActionResult AllStudentTasks()
         {
             var tasks = _taskFacade.GetStudentTasksByEmail(User.GetEmail());
-            return View("AllStudentTasks", tasks);
+            var result = new List<TaskViewModel>();
+
+            foreach (var task in tasks)
+                result.Add(new TaskViewModel() { Comment = task.Comment, Priority = task.Priority, Status = task.Status, CourseWorkId = task.CourseWorkId, Id = task.Id });
+
+            return View("AllStudentTasks", result);
         }
 
         [Authorize(Roles = "Lecturer")]
@@ -34,14 +40,19 @@ namespace CourseTrack.Controllers
             ViewBag.StudentId = studentId;
             ViewBag.CourseWorkId = courseWorkId;
 
-            return View("AllStudentTasks", tasks);
+            var result = new List<TaskViewModel>();
+
+            foreach (var task in tasks)
+                result.Add(new TaskViewModel() { Comment = task.Comment, Priority = task.Priority, Status = task.Status, CourseWorkId = task.CourseWorkId, Id = task.Id });
+
+            return View("AllStudentTasks", result);
         }
 
         [Authorize(Roles = "Lecturer")]
         [HttpGet]
         public ActionResult Add(int id)
         {
-            var task = new Task();
+            var task = new TaskViewModel();
             ViewBag.CourseWorkId = id;
 
             return View("AddEdit", task);
@@ -52,6 +63,7 @@ namespace CourseTrack.Controllers
         public ActionResult Edit(int id)
         {
             var task = _taskFacade.GetTaskById(id);
+            var viewModel = new TaskViewModel() { Comment = task.Comment, Priority = task.Priority, Status = task.Status, CourseWorkId = task.CourseWorkId, Id = task.Id };
             ViewBag.TaskId = id;
 
             ViewData["readonly"] = User.GetRole() == Role.Student.ToString() ? "readonly" : "";
@@ -60,27 +72,29 @@ namespace CourseTrack.Controllers
             if (task == null)
                 return NotFound();
 
-            return View("AddEdit", task);
+            return View("AddEdit", viewModel);
         }
 
         [Authorize]
         [HttpPost]
-        public ActionResult AddEdit(Task task)
+        public ActionResult AddEdit(TaskViewModel task)
         {
+            var dto = new TaskDto() { Comment = task.Comment, Priority = task.Priority, Status = task.Status, CourseWorkId = task.CourseWorkId, Id = task.Id };
+
             if (ModelState.IsValid)
             {
-                if (task.Id == 0)
-                    _taskFacade.AddTask(task);
+                if (dto.Id == 0)
+                    _taskFacade.AddTask(dto);
                 else
-                    _taskFacade.EditTask(task);
+                    _taskFacade.EditTask(dto);
 
                 if (User.GetRole() == Role.Lecturer.ToString())
                     return RedirectToAction("GetLecturerStudents", "Student");
                 else
-                    return RedirectToAction("Details", "Student", new { id = task.CourseWorkId });
+                    return RedirectToAction("Details", "Student", new { id = dto.CourseWorkId });
             }
 
-            return View(task);
+            return View(dto);
         }
     }
 }

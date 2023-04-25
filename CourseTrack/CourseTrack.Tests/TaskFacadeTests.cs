@@ -1,4 +1,6 @@
-﻿using BusinessLayer.Tasks;
+﻿using AutoMapper;
+using BusinessLayer.Models;
+using BusinessLayer.Tasks;
 using CourseTrack.Controllers;
 using DataLayer.Enums;
 using DataLayer.Tasks;
@@ -17,44 +19,61 @@ namespace CourseTrack.Tests
     [TestFixture]
     public class TaskServiceTests
     {
-        private Mock<ITaskRepository> _taskRepositoryMock;
-        private ITaskFacade _taskService;
+        private Mock<ITaskRepository> _mockTaskRepository;
+        private IMapper _mapper;
 
         [SetUp]
-        public void SetUp()
+        public void Setup()
         {
-            _taskRepositoryMock = new Mock<ITaskRepository>();
-            _taskService = new TaskFacade(_taskRepositoryMock.Object);
+            _mockTaskRepository = new Mock<ITaskRepository>();
+            var mapperConfig = new MapperConfiguration(config =>
+            {
+                config.CreateMap<Task, TaskDto>();
+                config.CreateMap<TaskDto, Task>();
+            });
+            _mapper = mapperConfig.CreateMapper();
         }
 
         [Test]
-        public void GetTaskById_ValidId_ReturnsTask()
+        public void GetStudentTasksById_Should_Return_List_Of_TaskDto()
         {
             // Arrange
-            var taskId = 1;
-            var expectedTask = new Task { Id = taskId, Comment = "Test comment", Status = Statuses.Done, Priority = Priorities.Low };
-
-            _taskRepositoryMock.Setup(x => x.GetTaskById(taskId)).Returns(expectedTask);
+            var tasks = new List<Task>()
+            {
+                new Task() { Id = 1, Comment = "Task 1" },
+                new Task() { Id = 2, Comment = "Task 2" },
+                new Task() { Id = 3, Comment = "Task 3" }
+            };
+            _mockTaskRepository.Setup(repo => repo.GetStudentTasks(1)).Returns(tasks);
+            var taskService = new TaskFacade(_mapper, _mockTaskRepository.Object);
 
             // Act
-            var actualTask = _taskService.GetTaskById(taskId);
+            var result = taskService.GetStudentTasksById(1);
 
             // Assert
-            Assert.AreEqual(expectedTask, actualTask);
+            Assert.IsInstanceOf<List<TaskDto>>(result);
+            Assert.AreEqual(3, result.Count);
         }
 
         [Test]
-        public void EditTask_ValidTask_CallsEditTaskOnRepository()
+        public void GetStudentTasksByEmail_Should_Return_List_Of_TaskDto()
         {
             // Arrange
-            var taskToEdit = new Task { Id = 1, Comment = "Test comment", Status = Statuses.Done, Priority = Priorities.Low };
+            var tasks = new List<Task>()
+            {
+                new Task() { Id = 1, Comment = "Task 1" },
+                new Task() { Id = 2, Comment = "Task 2" },
+                new Task() { Id = 3, Comment = "Task 3" }
+            };
+            _mockTaskRepository.Setup(repo => repo.GetStudentTasks("student@example.com")).Returns(tasks);
+            var taskService = new TaskFacade(_mapper, _mockTaskRepository.Object);
 
             // Act
-            _taskService.EditTask(taskToEdit);
+            var result = taskService.GetStudentTasksByEmail("student@example.com");
 
             // Assert
-            _taskRepositoryMock.Verify(x => x.EditTask(taskToEdit), Times.Once);
+            Assert.IsInstanceOf<List<TaskDto>>(result);
+            Assert.AreEqual(3, result.Count);
         }
     }
-
 }

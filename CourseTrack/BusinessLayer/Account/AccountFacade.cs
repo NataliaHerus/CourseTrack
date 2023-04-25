@@ -1,5 +1,7 @@
 ﻿using BusinessLayer.Services;
 using DataLayer.Account;
+using DataLayer.Entities.StudentEntity;
+using DataLayer.Enums;
 using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -34,7 +36,8 @@ namespace BusinessLayer.Account
                 byte[] hashBytes = hmac.ComputeHash(inputBytes);
                 string hashPassword = BitConverter.ToString(hashBytes).Replace("-", "");
 
-                _accountRepository.RegisterStudent(firstName, lastName, email, hashPassword);
+                var student = new Student { FirstName = firstName, LastName = lastName, Email = email, Password = password };
+                _accountRepository.RegisterStudent(student);
             }
 
             return true;
@@ -51,7 +54,10 @@ namespace BusinessLayer.Account
                 byte[] hashBytes = hmac.ComputeHash(inputBytes);
                 string hashPassword = BitConverter.ToString(hashBytes).Replace("-", "");
 
-                isValid = _accountRepository.PasswordIsValid(email, hashPassword);
+                var userRole = _accountRepository.UserIsStudent(email) ? Role.Student : Role.Lecturer;
+
+                isValid = userRole == Role.Student ? _accountRepository.StudentPasswordIsValid(email, hashPassword)
+                    : _accountRepository.LecturerPasswordIsValid(email, hashPassword);
             }
 
             return isValid;
@@ -59,8 +65,8 @@ namespace BusinessLayer.Account
 
         public string GetToken(string email)
         {
-            var userRole = _accountRepository.GetUserRole(email);
-            var fullName = _accountRepository.GetFullName(email);
+            var userRole = _accountRepository.UserIsStudent(email) ? Role.Student : Role.Lecturer;
+            var fullName = userRole == Role.Student ? _accountRepository.GetStudentFullName(email) : _accountRepository.GetLecturerFullName(email);
 
             var claims = new List<Claim>
                 {

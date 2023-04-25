@@ -1,4 +1,5 @@
-﻿using DataLayer.Enums;
+﻿using DataLayer.Entities.StudentEntity;
+using DataLayer.Enums;
 
 namespace DataLayer.Account
 {
@@ -6,12 +7,18 @@ namespace DataLayer.Account
     {
         bool UserExists(string email);
 
-        void RegisterStudent(string firstName, string lastName, string email, string password);
+        void RegisterStudent(Student student);
 
-        Role GetUserRole(string email);
+        bool UserIsStudent(string email);
 
-        bool PasswordIsValid(string email, string password);
+        bool UserIsLecturer(string email);
 
-        string GetFullName(string email);
+        string GetStudentFullName(string email);
+
+        string GetLecturerFullName(string email);
+
+        bool StudentPasswordIsValid(string email, string password);
+
+        bool LecturerPasswordIsValid(string email, string password);
     }
 }

@@ -1,4 +1,5 @@
-﻿using DataLayer.Entities.StudentEntity;
+﻿using AutoMapper;
+using BusinessLayer.Models;
 using DataLayer.Tasks;
 
 using Task = DataLayer.Entities.TaskEntity.Task;
@@ -8,35 +9,42 @@ namespace BusinessLayer.Tasks
     public class TaskFacade : ITaskFacade
     {
         private readonly ITaskRepository _taskRepository;
+        private readonly IMapper _mapper;
 
-        public TaskFacade(ITaskRepository taskRepository)
+        public TaskFacade(IMapper mapper, ITaskRepository taskRepository)
         {
+            _mapper = mapper;
             _taskRepository = taskRepository;
         }
 
-        public List<Task> GetStudentTasksById(int id)
+        public List<TaskDto> GetStudentTasksById(int id)
         {
-            return _taskRepository.GetStudentTasks(id);
+            var tasks = _taskRepository.GetStudentTasks(id);
+            return _mapper.Map<List<TaskDto>>(tasks);
         }
 
-        public List<Task> GetStudentTasksByEmail(string email)
+        public List<TaskDto> GetStudentTasksByEmail(string email)
         {
-            return _taskRepository.GetStudentTasks(email);
+            var tasks = _taskRepository.GetStudentTasks(email);
+            return _mapper.Map<List<TaskDto>>(tasks);
         }
 
-        public void AddTask(Task task)
+        public void AddTask(TaskDto task)
         {
-            _taskRepository.AddTask(task);
+            var entity = _mapper.Map<Task>(task);
+            _taskRepository.AddTask(entity);
         }
 
-        public Task GetTaskById(int id)
+        public TaskDto GetTaskById(int id)
         {
-            return _taskRepository.GetTaskById(id);
+            var task = _taskRepository.GetTaskById(id);
+            return _mapper.Map<TaskDto>(task);
         }
 
-        public void EditTask(Task task)
+        public void EditTask(TaskDto task)
         {
-            _taskRepository.EditTask(task);
+            var entity = _mapper.Map<Task>(task);
+            _taskRepository.EditTask(entity);
         }
     }
 }

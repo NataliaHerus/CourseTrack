@@ -13,10 +13,8 @@ namespace DataLayer.Account
             _context = context;
         }
 
-        public void RegisterStudent(string firstName, string lastName, string email, string password)
+        public void RegisterStudent(Student student)
         {
-            var student = new Student { FirstName = firstName, LastName = lastName, Email = email, Password = password };
-
             _context.Students.Add(student);
             _context.SaveChanges();
         }
@@ -26,47 +24,40 @@ namespace DataLayer.Account
             return _context.Students.Any(s => s.Email == email) || _context.Lecturers.Any(s => s.Email == email);
         }
 
-        public Role GetUserRole(string email)
+        public bool UserIsStudent(string email)
         {
             var student = _context.Students.FirstOrDefault(s => s.Email == email);
-            if (student != null)
-            {
-                return Role.Student;
-            }
-
-            var lecturer = _context.Lecturers.FirstOrDefault(l => l.Email == email);
-            if (lecturer != null)
-            {
-                return Role.Lecturer;
-            }
-
-            throw new ArgumentException("Користувач не знайдений");
+            return student != null;
         }
 
-        public bool PasswordIsValid(string email, string password)
+        public bool UserIsLecturer(string email)
         {
-            var student = _context.Students.FirstOrDefault(s => s.Email == email);
-            if (student != null)
-                return student.Password == password;
-
-            var lecturer = _context.Lecturers.FirstOrDefault(l => l.Email == email);
-            if (lecturer != null)
-                return lecturer.Password == password;
-
-            throw new ArgumentException("Користувач не знайдений");
+            var lecturer = _context.Lecturers.FirstOrDefault(s => s.Email == email);
+            return lecturer != null;
         }
 
-        public string GetFullName(string email)
+        public bool StudentPasswordIsValid(string email, string password)
         {
             var student = _context.Students.FirstOrDefault(s => s.Email == email);
-            if (student != null)
-                return $"{student.FirstName} {student.LastName}";
+            return student.Password == password;
+        }
 
-            var lecturer = _context.Lecturers.FirstOrDefault(l => l.Email == email);
-            if (lecturer != null)
-                return $"{lecturer.FirstName} {lecturer.LastName}";
+        public bool LecturerPasswordIsValid(string email, string password)
+        {
+            var lecturer = _context.Lecturers.FirstOrDefault(s => s.Email == email);
+            return lecturer.Password == password;
+        }
 
-            throw new ArgumentException("Користувач не знайдений");
+        public string GetStudentFullName(string email)
+        {
+            var student = _context.Students.FirstOrDefault(s => s.Email == email);
+            return $"{student.FirstName} {student.LastName}";
+        }
+
+        public string GetLecturerFullName(string email)
+        {
+            var lecturer = _context.Lecturers.FirstOrDefault(s => s.Email == email);
+            return $"{lecturer.FirstName} {lecturer.LastName}";
         }
     }
 }

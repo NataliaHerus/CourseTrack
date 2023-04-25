@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Account;
 using CourseTrack.Models;
+using DataLayer.Entities.StudentEntity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CourseTrack.Controllers
@@ -30,12 +31,14 @@ namespace CourseTrack.Controllers
                     var token = _accountFacade.GetToken(model.Email);
                     Response.Cookies.Append("X-Access-Token", token, new CookieOptions() { HttpOnly = true, SameSite = SameSiteMode.Strict });
 
+                    TempData["Error"] = null;
                     return RedirectToAction("Index", "Home");
                 }
-
-                return Unauthorized();
+                TempData["Error"] = "Неправильний Email/Пароль";
+                return View(model);
             }
 
+            TempData["Error"] = "Неправильний Email/Пароль";
             return View(model);
         }
 

@@ -2,11 +2,7 @@
 using BusinessLayer.Models;
 using DataLayer.Entities.CourseWorkEntity;
 using DataLayer.Entities.StudentEntity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Task = DataLayer.Entities.TaskEntity.Task;
 
 namespace BusinessLayer
 {
@@ -14,6 +10,7 @@ namespace BusinessLayer
     {
         public AutoMapperProfile()
         {
+            CreateMap<Task, TaskDto>().ReverseMap();
             CreateMap<Student, StudentDto>().ReverseMap();
             CreateMap<CourseWork, CourseWorkDto>().ReverseMap();
         }

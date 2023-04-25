@@ -1,14 +1,13 @@
-﻿using DataLayer.Entities.StudentEntity;
-using Task = DataLayer.Entities.TaskEntity.Task;
+﻿using BusinessLayer.Models;
 
 namespace BusinessLayer.Tasks
 {
     public interface ITaskFacade
     {
-        List<Task> GetStudentTasksById(int id);
-        List<Task> GetStudentTasksByEmail(string email);
-        void AddTask(Task task);
-        Task GetTaskById(int id);
-        void EditTask(Task task);
+        List<TaskDto> GetStudentTasksById(int id);
+        List<TaskDto> GetStudentTasksByEmail(string email);
+        void AddTask(TaskDto task);
+        TaskDto GetTaskById(int id);
+        void EditTask(TaskDto task);
     }
 }
