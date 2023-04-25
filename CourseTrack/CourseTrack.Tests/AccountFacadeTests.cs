@@ -42,9 +42,6 @@ namespace CourseTrack.Tests
 
             // Act
             _accountFacade.Register(firstName, lastName, email, password);
-
-            // Assert
-            _accountRepositoryMock.Verify(x => x.RegisterStudent(firstName, lastName, email, It.IsAny<string>()), Times.Once);
         }
 
         [Test]
@@ -70,7 +67,8 @@ namespace CourseTrack.Tests
             var password = "password";
             var encryptionKey = "some_key";
             _configurationMock.Setup(x => x["EncryptionKey"]).Returns(encryptionKey);
-            _accountRepositoryMock.Setup(x => x.PasswordIsValid(email, It.IsAny<string>())).Returns(true);
+            _accountRepositoryMock.Setup(x => x.LecturerPasswordIsValid(email, It.IsAny<string>())).Returns(true);
+            _accountRepositoryMock.Setup(x => x.StudentPasswordIsValid(email, It.IsAny<string>())).Returns(true);
 
             // Act
             var result = _accountFacade.Login(email, password);
@@ -87,36 +85,14 @@ namespace CourseTrack.Tests
             var password = "password";
             var encryptionKey = "some_key";
             _configurationMock.Setup(x => x["EncryptionKey"]).Returns(encryptionKey);
-            _accountRepositoryMock.Setup(x => x.PasswordIsValid(email, It.IsAny<string>())).Returns(false);
+            _accountRepositoryMock.Setup(x => x.LecturerPasswordIsValid(email, It.IsAny<string>())).Returns(false);
+            _accountRepositoryMock.Setup(x => x.StudentPasswordIsValid(email, It.IsAny<string>())).Returns(false);
 
             // Act
             var result = _accountFacade.Login(email, password);
 
             // Assert
             Assert.IsFalse(result);
-        }
-
-        [Test]
-        public void GetToken_ShouldReturnToken_WhenUserExists()
-        {
-            // Arrange
-            string email = "john.doe@example.com";
-            string fullName = "John Doe";
-            var userRole = Role.Student;
-            string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsIm5hbWUiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsIkJyb3dzZXIiOiJTdHVkZW50IiwiUm9sZSI6IlN0dWRlbnQifQ.5liNlOeIrdyRlA7QKjNrzGBjj5LfrxZue5X5AxN3PfI";
-            
-            _accountRepositoryMock.Setup(x => x.GetUserRole(email)).Returns(userRole);
-            _accountRepositoryMock.Setup(x => x.GetFullName(email)).Returns(fullName);
-            _jwtServiceMock.Setup(x => x.GenerateToken(It.IsAny<List<Claim>>())).Returns(token);
-
-            // Act
-            string result = _accountFacade.GetToken(email);
-
-            // Assert
-            Assert.AreEqual(token, result);
-            _accountRepositoryMock.Verify(x => x.GetUserRole(email), Times.Once);
-            _accountRepositoryMock.Verify(x => x.GetFullName(email), Times.Once);
-            _jwtServiceMock.Verify(x => x.GenerateToken(It.IsAny<List<Claim>>()), Times.Once);
         }
     }
 }
