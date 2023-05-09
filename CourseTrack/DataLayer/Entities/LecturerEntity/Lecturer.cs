@@ -11,6 +11,8 @@ namespace DataLayer.Entities.LecturerEntity
         public string? MiddleName { get; set; }
         public string? Email { get; set; }
         public string? Password { get; set; }
+        public string? Token { get; set; }
+        public DateTime? TokenExpirationDate { get; set; }
 
         public ICollection<Student>? Students { get; }
 

@@ -6,6 +6,7 @@ using BusinessLayer.Models;
 using BusinessLayer.Services;
 using BusinessLayer.Students;
 using BusinessLayer.Tasks;
+using Castle.Core.Smtp;
 using CourseTrack.Models;
 using DataLayer.Account;
 using DataLayer.CourseWorks;
@@ -17,6 +18,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System.Configuration;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,6 +38,10 @@ var connectionString = builder.Configuration.GetConnectionString("CourseTrackCon
 builder.Services.AddDbContext<CourseTrackDbContext>(options =>
     options.UseNpgsql(connectionString!));
 
+var emailConfig = builder.Configuration
+        .GetSection("EmailConfiguration")
+        .Get<EmailConfiguration>();
+builder.Services.AddSingleton(emailConfig);
 
 #region jwt
 
@@ -88,6 +94,8 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<IJwtService, JwtService>();
+
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddScoped<ITaskFacade, TaskFacade>();
 

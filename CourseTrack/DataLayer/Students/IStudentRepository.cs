@@ -20,5 +20,12 @@ namespace DataLayer.Students
         Task<int> SaveChangesAsync();
 
         Student? GetStudentByEmail(string email);
+
+        IEnumerable<string> GetActiveTokens(DateTime expirationDate);
+        void SaveToken(int id, string token, DateTime tokenExpirationDate);
+
+        Student GetStudentByToken(string token, DateTime expirationDate);
+
+        void SetPassword(int id, string password);
     }
 }

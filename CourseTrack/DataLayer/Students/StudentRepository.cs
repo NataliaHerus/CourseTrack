@@ -47,5 +47,39 @@ namespace DataLayer.Students
             _dbContext.Entry(student!).State = EntityState.Modified;
             return student;
         }
+
+        public IEnumerable<string> GetActiveTokens(DateTime expirationDate)
+        {
+            var tokens = _dbContext
+                .Students
+                .Where(s => s.TokenExpirationDate > expirationDate)
+                .Select(s => s.Token);
+
+            return tokens;
+        }
+
+        public void SaveToken(int id, string token, DateTime tokenExpirationDate)
+        {
+            var student = _dbContext.Students.First(x => x.Id == id);
+            student.Token = token;
+            student.TokenExpirationDate = tokenExpirationDate;
+
+            _dbContext.SaveChanges();
+        }
+
+        public void SetPassword(int id, string password)
+        {
+            var student = _dbContext.Students.First(x => x.Id == id);
+            student.Password = password;
+            student.Token = null;
+
+            _dbContext.SaveChanges();
+        }
+
+        public Student GetStudentByToken(string token, DateTime expirationDate)
+        {
+            var student = _dbContext.Students.FirstOrDefault(s => s.Token == token && s.TokenExpirationDate > expirationDate);
+            return student;
+        }
     }
 }

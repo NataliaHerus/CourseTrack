@@ -11,5 +11,11 @@ namespace DataLayer.Lecturers
     public interface ILecturerRepository
     {
         Lecturer? GetLecturerByEmail(string email);
+        IEnumerable<string> GetActiveTokens(DateTime expirationDate);
+        void SaveToken(int id, string token, DateTime tokenExpirationDate);
+
+        Lecturer GetLecturerByToken(string token, DateTime expirationDate);
+
+        void SetPassword(int id, string password);
     }
 }

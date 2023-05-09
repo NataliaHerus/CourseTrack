@@ -11,7 +11,10 @@ namespace BusinessLayer
         public AutoMapperProfile()
         {
             CreateMap<Task, TaskDto>().ReverseMap();
-            CreateMap<Student, StudentDto>().ReverseMap();
+            CreateMap<Student, StudentDto>().ReverseMap()
+                .ForPath(_ => _.Token, dest => dest.Ignore())
+                .ForPath(_ => _.TokenExpirationDate, dest => dest.Ignore());
+
             CreateMap<CourseWork, CourseWorkDto>().ReverseMap();
         }
     }

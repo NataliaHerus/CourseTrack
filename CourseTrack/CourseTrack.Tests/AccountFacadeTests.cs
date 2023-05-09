@@ -2,6 +2,8 @@ using BusinessLayer.Account;
 using BusinessLayer.Services;
 using DataLayer.Account;
 using DataLayer.Enums;
+using DataLayer.Lecturers;
+using DataLayer.Students;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using System.Security.Claims;
@@ -15,6 +17,9 @@ namespace CourseTrack.Tests
         private Mock<IJwtService> _jwtServiceMock;
         private Mock<IConfiguration> _configurationMock;
         private Mock<IAccountRepository> _accountRepositoryMock;
+        private Mock<IEmailService> _emailServiceMock;
+        private Mock<IStudentRepository> _studentRepositoryMock;
+        private Mock<ILecturerRepository> _lecturerRepositoryMock;
 
         [SetUp]
         public void Setup()
@@ -22,9 +27,15 @@ namespace CourseTrack.Tests
             _jwtServiceMock = new Mock<IJwtService>();
             _configurationMock = new Mock<IConfiguration>();
             _accountRepositoryMock = new Mock<IAccountRepository>();
+            _emailServiceMock = new Mock<IEmailService>();
+            _studentRepositoryMock = new Mock<IStudentRepository>();
+            _lecturerRepositoryMock = new Mock<ILecturerRepository>();
 
             _accountFacade = new AccountFacade(
                 _jwtServiceMock.Object,
+                _emailServiceMock.Object,
+                _studentRepositoryMock.Object,
+                _lecturerRepositoryMock.Object,
                 _configurationMock.Object,
                 _accountRepositoryMock.Object);
         }
